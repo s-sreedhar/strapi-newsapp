@@ -10,6 +10,13 @@ Start your Strapi application with autoReload enabled. [Learn more](https://docs
 npm run develop
 # or
 yarn develop
+
+npm install @strapi/plugin-graphql
+npm install strapi-plugin-slugify
+npm install @strapi/plugin-seo
+npm install strapi-plugin-populate-deep
+npm install @strapi/plugin-graphql
+npm install @strapi/plugin-documentation
 ```
 
 ### `start`
