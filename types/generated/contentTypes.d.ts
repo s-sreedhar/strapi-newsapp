@@ -385,10 +385,7 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
   };
   attributes: {
     author: Schema.Attribute.Relation<'manyToOne', 'api::author.author'>;
-    categories: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::category.category'
-    >;
+    category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
     content: Schema.Attribute.RichText & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -507,7 +504,7 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    article: Schema.Attribute.Relation<'manyToOne', 'api::article.article'>;
+    articles: Schema.Attribute.Relation<'oneToMany', 'api::article.article'>;
     color: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 7;
