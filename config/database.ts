@@ -87,22 +87,14 @@ module.exports = ({ env }) => ({
   connection: {
     client: 'postgres',
     connection: {
-      host: env('DATABASE_HOST'), // From DO dashboard
-      port: env.int('DATABASE_PORT', 25060), // Default DO PostgreSQL port
-      database: env('DATABASE_NAME', 'defaultdb'), // DO's default database name
-      user: env('DATABASE_USERNAME', 'doadmin'), // DO's default admin user
-      password: env('DATABASE_PASSWORD'), // From DO dashboard
+      host: env('DATABASE_HOST', '127.0.0.1'), // From DO dashboard
+      port: env.int('DATABASE_PORT', 5432), // Default DO PostgreSQL port
+      database: env('DATABASE_NAME', 'strapi'), // DO's default database name
+      user: env('DATABASE_USERNAME', 'strapi'), // DO's default admin user
+      password: env('DATABASE_PASSWORD', 'strapi'), // From DO dashboard
       ssl: {
-        rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', true), // Required for DO
         ca: env('DATABASE_SSL_CA'), // Get from DO connection details
       },
-    },
-    pool: {
-      min: 0,
-      max: 5,
-      idleTimeoutMillis: 30000,
-      createTimeoutMillis: 30000,
-      acquireTimeoutMillis: 30000,
     },
     debug: false,
   },
