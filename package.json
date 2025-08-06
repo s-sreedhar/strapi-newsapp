@@ -20,6 +20,7 @@
     "@strapi/plugin-graphql": "^5.19.0",
     "@strapi/plugin-seo": "^2.0.8",
     "@strapi/plugin-users-permissions": "5.19.0",
+    "@strapi/provider-upload-cloudinary": "^5.20.0",
     "@strapi/strapi": "5.19.0",
     "better-sqlite3": "11.3.0",
     "pg": "^8.16.3",
