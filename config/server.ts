@@ -5,5 +5,5 @@ export default ({ env }) => ({
   app: {
     keys: env.array('APP_KEYS'),
   },
-  url: env('PUBLIC_URL', 'https://ozi-news-app-cms-d7k6f.ondigitalocean.app'),
+  // url: env('PUBLIC_URL', 'https://ozi-news-app-cms-d7k6f.ondigitalocean.app'),
 });
