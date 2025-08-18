@@ -14,7 +14,7 @@
       "url": "https://opensource.org/licenses/MIT"
     },
     "termsOfService": "YOUR_TERMS_OF_SERVICE_URL",
-    "x-generation-date": "2025-08-16T17:31:12.357Z"
+    "x-generation-date": "2025-08-18T16:45:23.020Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -10460,7 +10460,9 @@
           "data": {
             "required": [
               "email",
-              "fullname"
+              "fullname",
+              "isActive",
+              "subscribedAt"
             ],
             "type": "object",
             "properties": {
@@ -10478,7 +10480,6 @@
                 "type": "string",
                 "format": "date-time"
               },
-              "preferences": {},
               "locale": {
                 "type": "string"
               },
@@ -10539,7 +10540,9 @@
         "type": "object",
         "required": [
           "email",
-          "fullname"
+          "fullname",
+          "isActive",
+          "subscribedAt"
         ],
         "properties": {
           "id": {
@@ -10562,7 +10565,6 @@
             "type": "string",
             "format": "date-time"
           },
-          "preferences": {},
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -10877,7 +10879,6 @@
                   "type": "string",
                   "format": "date-time"
                 },
-                "preferences": {},
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"

@@ -561,16 +561,17 @@ export interface ApiNewsletterSubscriptionNewsletterSubscription
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     fullname: Schema.Attribute.String & Schema.Attribute.Required;
-    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    isActive: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::newsletter-subscription.newsletter-subscription'
     > &
       Schema.Attribute.Private;
-    preferences: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
-    subscribedAt: Schema.Attribute.DateTime;
+    subscribedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
