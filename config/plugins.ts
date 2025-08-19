@@ -1,6 +1,22 @@
 import { env } from "process";
 
 export default ({ env }) => ({
+  email: {
+    config: {
+      provider: 'strapi-provider-email-brevo',
+      providerOptions: {
+        apiKey: env('BREVO_API_KEY'),
+      },
+      settings: {
+        defaultFrom: env('BREVO_SENDER_EMAIL'),
+        defaultReplyTo: env('BREVO_SENDER_EMAIL'),
+        testAddress: env('BREVO_SENDER_EMAIL'),
+      },
+    },
+  },
+  'email-designer-5': {
+    enabled: true,
+  },
   'populate-deep': {
     config: {
       defaultDepth: 5, // Default is 5
