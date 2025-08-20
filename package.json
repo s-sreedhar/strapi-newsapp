@@ -28,6 +28,7 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0",
+    "sib-api-v3-sdk": "^8.5.0",
     "strapi-plugin-email-designer-5": "^0.0.7",
     "strapi-plugin-slugify": "^2.3.8",
     "strapi-provider-email-brevo": "^1.0.4",

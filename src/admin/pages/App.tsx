@@ -18,85 +18,163 @@ import {
   Td,
   Th,
   Badge,
+  Field,
 } from '@strapi/design-system';
 import { Mail, Play, ArrowClockwise } from '@strapi/icons';
 import { useFetchClient } from '@strapi/strapi/admin';
 
-const NewsletterApp = () => {
-  const [newsletters, setNewsletters] = useState([]);
-  const [selectedNewsletter, setSelectedNewsletter] = useState('');
-  const [subject, setSubject] = useState('');
-  const [content, setContent] = useState('');
-  const [testEmail, setTestEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [result, setResult] = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
+// Newsletter interface based on Strapi content type
+interface Newsletter {
+  id: number;
+  title: string;
+  subject: string;
+  content: string;
+  docstatus: 'draft' | 'scheduled' | 'sent';
+  scheduledAt?: string;
+  sentAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+}
+
+interface ApiResponse<T> {
+  data: T;
+  meta?: any;
+}
+
+interface MessageResult {
+  type: 'success' | 'error';
+  message: string;
+  success?: boolean;
+}
+
+const NewsletterApp: React.FC = () => {
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<string>('');
+  const [subject, setSubject] = useState<string>('');
+  const [content, setContent] = useState<string>('');
+  const [testEmail, setTestEmail] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [stats, setStats] = useState<any>(null);
+  const [result, setResult] = useState<MessageResult | null>(null);
+  const [activeTab, setActiveTab] = useState<number>(0);
   
   const { get, post } = useFetchClient();
 
   // Fetch newsletters on component mount
   useEffect(() => {
-    fetchNewsletters();
+    let isMounted = true;
+    
+    const loadNewsletters = async () => {
+      try {
+        // Use admin Content Manager API endpoint for authenticated access
+        const response = await get('/content-manager/collection-types/api::newsletter.newsletter?populate=*') as any;
+        
+        // Only update state if component is still mounted
+        if (!isMounted) return;
+        
+        console.log('API Response:', response);
+        
+        // Handle admin API response format (axios-style or direct)
+         const payload = response?.data ?? response;
+         let newsletterData: Newsletter[] = [];
+         
+         // Check for direct data array (Strapi v5 format)
+         if (payload?.data && Array.isArray(payload.data)) {
+           newsletterData = payload.data;
+         } else if (payload?.results && Array.isArray(payload.results)) {
+           newsletterData = payload.results;
+         } else if (Array.isArray(payload)) {
+           newsletterData = payload;
+         } else {
+           console.warn('Unexpected response format:', payload);
+           newsletterData = [];
+         }
+        
+        setNewsletters(newsletterData);
+        console.log('Newsletters loaded:', newsletterData.length);
+      } catch (error: any) {
+        // Only update state if component is still mounted
+        if (!isMounted) return;
+        
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching newsletters:', error);
+          setResult({ type: 'error', message: 'Failed to fetch newsletters. Please check if newsletters exist in Content Manager.' });
+        }
+        setNewsletters([]); // Ensure newsletters is always an array
+      }
+    };
+    
+    loadNewsletters();
+    
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const fetchNewsletters = async () => {
+  const fetchNewsletters = async (): Promise<void> => {
     try {
-      const { data } = await get('/admin/api/newsletters?populate=*');
-      setNewsletters(data || []);
-    } catch (error) {
-      console.error('Error fetching newsletters:', error);
-      setResult({ type: 'error', message: 'Failed to fetch newsletters' });
+      // Use admin Content Manager API endpoint for authenticated access
+      const response = await get('/content-manager/collection-types/api::newsletter.newsletter?populate=*') as any;
+      console.log('API Response:', response);
+      
+      // Handle admin API response format (axios-style or direct)
+       const payload = response?.data ?? response;
+       let newsletterData: Newsletter[] = [];
+       
+       // Check for direct data array (Strapi v5 format)
+       if (payload?.data && Array.isArray(payload.data)) {
+         newsletterData = payload.data;
+       } else if (payload?.results && Array.isArray(payload.results)) {
+         newsletterData = payload.results;
+       } else if (Array.isArray(payload)) {
+         newsletterData = payload;
+       } else {
+         console.warn('Unexpected response format:', payload);
+         newsletterData = [];
+       }
+      
+      setNewsletters(newsletterData);
+      console.log('Newsletters loaded:', newsletterData.length);
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching newsletters:', error);
+        setResult({ type: 'error', message: 'Failed to fetch newsletters. Please check if newsletters exist in Content Manager.' });
+        setNewsletters([]); // Clear only on real error
+      }
     }
   };
 
-  const handleNewsletterSelect = (newsletterId) => {
-    const newsletter = newsletters.find(n => n.id === parseInt(newsletterId));
+  const handleNewsletterSelect = (newsletterId: string | number): void => {
+    const idString = newsletterId.toString();
+    const newsletter = newsletters.find(n => n.id.toString() === idString);
     if (newsletter) {
-      setSelectedNewsletter(newsletterId);
-      setSubject(newsletter.attributes?.subject || newsletter.subject || '');
-      setContent(newsletter.attributes?.content || newsletter.content || '');
+      setSelectedNewsletter(idString);
+      setSubject(newsletter.subject || '');
+      setContent(newsletter.content || '');
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: 'draft' | 'scheduled' | 'sent'): { children: string; backgroundColor: string; textColor: string } => {
     switch (status) {
       case 'sent':
         return { children: 'Sent', backgroundColor: 'success100', textColor: 'success600' };
-      case 'draft':
-        return { children: 'Draft', backgroundColor: 'neutral100', textColor: 'neutral600' };
       case 'scheduled':
         return { children: 'Scheduled', backgroundColor: 'warning100', textColor: 'warning600' };
+      case 'draft':
       default:
-        return { children: 'Unknown', backgroundColor: 'neutral100', textColor: 'neutral600' };
+        return { children: 'Draft', backgroundColor: 'neutral100', textColor: 'neutral600' };
     }
   };
 
-  const handleSendTest = async () => {
-    if (!testEmail || !subject || !content) {
-      setResult({ type: 'error', message: 'Please fill all fields' });
+  const handleSendTest = async (): Promise<void> => {
+    if (!testEmail) {
+      setResult({ type: 'error', message: 'Please enter a test email address' });
       return;
     }
 
-    setLoading(true);
-    try {
-      if (!selectedNewsletter) {
-        setResult({ type: 'error', message: 'Please select a newsletter first' });
-        return;
-      }
-
-      const data = await post(`/api/newsletters/${selectedNewsletter}/send-test`, {
-        testEmail: testEmail
-      });
-      setResult(data);
-    } catch (error) {
-      setResult({ type: 'error', message: error.message });
-    }
-    setLoading(false);
-  };
-
-  const handleSendToAll = async () => {
     if (!subject || !content) {
       setResult({ type: 'error', message: 'Please fill subject and content' });
       return;
@@ -104,33 +182,110 @@ const NewsletterApp = () => {
 
     setLoading(true);
     try {
-      if (!selectedNewsletter) {
-        setResult({ type: 'error', message: 'Please select a newsletter first' });
-        return;
-      }
-
-      const data = await post(`/api/newsletters/${selectedNewsletter}/send`, {
-        subject,
-        content,
+      // Use the email-news API endpoint which doesn't require authentication
+      const response = await post('/api/email-news/send-email', {
+        to: testEmail,
+        subject: subject,
+        htmlContent: `
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>${subject}</title>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+                .content { padding: 20px; }
+                .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>${subject}</h1>
+                </div>
+                <div class="content">
+                  ${content.replace(/\n/g, '<br>')}
+                </div>
+                <div class="footer">
+                  <p>This is a test email sent from your newsletter system.</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `
       });
-      setResult(data);
-      
-      // Update newsletter status to 'sent' if successful
-      if (data.success && selectedNewsletter) {
-        await updateNewsletterStatus(selectedNewsletter, 'sent');
-        fetchNewsletters(); // Refresh the list
-      }
+      const successResult: MessageResult = { type: 'success', message: 'Test email sent successfully!', success: true };
+      setResult(successResult);
     } catch (error) {
-      setResult({ type: 'error', message: error.message });
+      setResult({ type: 'error', message: error instanceof Error ? error.message : 'An error occurred' });
     }
     setLoading(false);
   };
 
-  const updateNewsletterStatus = async (newsletterId, status) => {
+  const handleSendToAll = async (): Promise<void> => {
+    if (!subject || !content) {
+      setResult({ type: 'error', message: 'Please fill subject and content' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Use the email-news API endpoint to send to all subscribers
+      const response = await post('/api/email-news/send-newsletter', {
+        subject: subject,
+        htmlContent: `
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>${subject}</title>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+                .content { padding: 20px; }
+                .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>${subject}</h1>
+                </div>
+                <div class="content">
+                  ${content.replace(/\n/g, '<br>')}
+                </div>
+                <div class="footer">
+                  <p>You received this email because you subscribed to our newsletter.</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `
+      });
+      const successResult: MessageResult = { type: 'success', message: 'Newsletter sent successfully!', success: true };
+      setResult(successResult);
+      
+      // Update newsletter status to 'sent' if successful
+      if (selectedNewsletter) {
+        await updateNewsletterStatus(selectedNewsletter, 'sent');
+        fetchNewsletters(); // Refresh the list
+      }
+    } catch (error) {
+      setResult({ type: 'error', message: error instanceof Error ? error.message : 'An error occurred' });
+    }
+    setLoading(false);
+  };
+
+  const updateNewsletterStatus = async (newsletterId: string, status: 'draft' | 'scheduled' | 'sent'): Promise<void> => {
     try {
       await post(`/content-manager/collection-types/api::newsletter.newsletter/${newsletterId}`, {
-        docstatus: status,
-        sentAt: status === 'sent' ? new Date().toISOString() : null,
+        data: {
+          docstatus: status,
+          sentAt: status === 'sent' ? new Date().toISOString() : null
+        }
       });
     } catch (error) {
       console.error('Error updating newsletter status:', error);
@@ -162,9 +317,10 @@ const NewsletterApp = () => {
       {result && (
         <Box padding={4}>
           <Alert
-            title={result.success ? 'Success' : 'Error'}
-            variant={result.success ? 'success' : 'danger'}
+            title={result.type === 'success' ? 'Success' : 'Error'}
+            variant={result.type === 'success' ? 'success' : 'danger'}
             onClose={() => setResult(null)}
+            closeLabel="Close"
           >
             {result.message}
           </Alert>
@@ -189,41 +345,51 @@ const NewsletterApp = () => {
         </Flex>
         
         {activeTab === 0 && (
-              <Box padding={4} background="neutral0" hasRadius shadow="tableShadow">
-                <Box marginBottom={4}>
-                   <SingleSelect
-                     label="Select Newsletter"
-                     placeholder="Choose a newsletter to send"
-                     value={selectedNewsletter}
-                     onChange={handleNewsletterSelect}
-                   >
-                     {newsletters.map((newsletter) => (
-                       <SingleSelectOption key={newsletter.id} value={newsletter.id.toString()}>
-                         {newsletter.attributes?.title || newsletter.title || 'Untitled'} - {newsletter.attributes?.subject || newsletter.subject || 'No Subject'}
-                       </SingleSelectOption>
-                     ))}
-                   </SingleSelect>
-                 </Box>
+        <Box padding={4} background="neutral0" hasRadius shadow="tableShadow">
+          <Box marginBottom={4}>
+            <Field.Root name="newsletter">
+              <Field.Label>Select Newsletter</Field.Label>
+              <SingleSelect
+                placeholder="Choose a newsletter to send"
+                value={selectedNewsletter}
+                onChange={handleNewsletterSelect}
+              >
+                {Array.isArray(newsletters) && newsletters.map((newsletter) => (
+                  <SingleSelectOption key={newsletter.id} value={newsletter.id.toString()}>
+                    {newsletter.title || 'Untitled'} - {newsletter.subject || 'No Subject'}
+                  </SingleSelectOption>
+                ))}
+              </SingleSelect>
+              <Field.Error />
+              <Field.Hint />
+            </Field.Root>
+          </Box>
 
-                <TextInput
-                  label="Subject"
-                  name="subject"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Newsletter subject"
-                  required
-                />
+          <Field.Root name="subject" required>
+                  <Field.Label>Subject</Field.Label>
+                  <TextInput
+                    name="subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder="Newsletter subject"
+                  />
+                  <Field.Error />
+                  <Field.Hint />
+                </Field.Root>
                 
                 <Box marginTop={4}>
-                  <Textarea
-                    label="Content Preview"
-                    name="content"
-                    value={typeof content === 'string' ? content : JSON.stringify(content)}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Newsletter content (HTML supported)"
-                    rows={8}
-                    required
-                  />
+                  <Field.Root name="content" required>
+                    <Field.Label>Content Preview</Field.Label>
+                    <Textarea
+                      name="content"
+                      value={typeof content === 'string' ? content : JSON.stringify(content)}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="Newsletter content (HTML supported)"
+                      rows={8}
+                    />
+                    <Field.Error />
+                    <Field.Hint />
+                  </Field.Root>
                 </Box>
 
                 <Box marginTop={4}>
@@ -243,7 +409,7 @@ const NewsletterApp = () => {
                       loading={loading}
                       startIcon={<Play />}
                       variant="secondary"
-                      disabled={!selectedNewsletter}
+                      disabled={!subject || !content}
                     >
                       Send Test
                     </Button>
@@ -294,33 +460,33 @@ const NewsletterApp = () => {
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {newsletters.map((newsletter) => (
+                      {Array.isArray(newsletters) && newsletters.map((newsletter) => (
                         <Tr key={newsletter.id}>
                           <Td>
                             <Typography textColor="neutral800">
-                              {newsletter.attributes?.title || newsletter.title || 'Untitled'}
+                              {newsletter.title || 'Untitled'}
                             </Typography>
                           </Td>
                           <Td>
                             <Typography textColor="neutral600">
-                              {newsletter.attributes?.subject || newsletter.subject || 'No Subject'}
+                              {newsletter.subject || 'No Subject'}
                             </Typography>
                           </Td>
                           <Td>
-                            <Badge {...getStatusBadge(newsletter.attributes?.docstatus || newsletter.docstatus || 'draft')} />
+                            <Badge {...getStatusBadge(newsletter.docstatus || 'draft')} />
                           </Td>
                           <Td>
                             <Typography textColor="neutral600">
-                              {(newsletter.attributes?.createdAt || newsletter.createdAt) 
-                                ? new Date(newsletter.attributes?.createdAt || newsletter.createdAt).toLocaleDateString()
+                              {newsletter.createdAt 
+                                ? new Date(newsletter.createdAt).toLocaleDateString()
                                 : '-'
                               }
                             </Typography>
                           </Td>
                           <Td>
                             <Typography textColor="neutral600">
-                              {(newsletter.attributes?.sentAt || newsletter.sentAt) 
-                                ? new Date(newsletter.attributes?.sentAt || newsletter.sentAt).toLocaleDateString()
+                              {newsletter.sentAt 
+                                ? new Date(newsletter.sentAt).toLocaleDateString()
                                 : '-'
                               }
                             </Typography>

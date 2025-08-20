@@ -59,7 +59,7 @@ export default {
       path: '/newsletters/:id/send',
       handler: 'newsletter.sendNewsletter',
       config: {
-        policies: ['admin::isAuthenticatedAdmin'],
+        policies: [],
         middlewares: [],
       },
     },
@@ -68,7 +68,7 @@ export default {
       path: '/newsletters/:id/send-test',
       handler: 'newsletter.sendTestNewsletter',
       config: {
-        policies: ['admin::isAuthenticatedAdmin'],
+        policies: [],
         middlewares: [],
       },
     },

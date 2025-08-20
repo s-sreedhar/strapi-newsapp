@@ -8,15 +8,16 @@ export default ({ env }) => ({
         apiKey: env('BREVO_API_KEY'),
       },
       settings: {
-        defaultFrom: env('BREVO_SENDER_EMAIL'),
+        defaultSenderEmail: env('BREVO_SENDER_EMAIL'),
+        defaultSenderName: env('BREVO_SENDER_NAME'),
         defaultReplyTo: env('BREVO_SENDER_EMAIL'),
         testAddress: env('BREVO_SENDER_EMAIL'),
       },
     },
   },
-  'email-designer-5': {
-    enabled: true,
-  },
+  // 'email-designer-5': {
+  //   enabled: true,
+  // },
   'populate-deep': {
     config: {
       defaultDepth: 5, // Default is 5
