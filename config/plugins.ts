@@ -97,4 +97,7 @@ export default ({ env }) => ({
       },
     },
   },
+  'strapi-google-analytics-dashboard': {
+    enabled: false,
+  },
 });
