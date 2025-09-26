@@ -5,6 +5,14 @@
 
 import { Context, Next } from 'koa';
 
+interface Subscriber {
+  id: number;
+  email: string;
+  fullname: string;
+  isActive: boolean;
+  subscribedAt: string;
+}
+
 interface SubscriptionValidationConfig {
   allowDuplicates?: boolean;
   requireFullName?: boolean;
@@ -129,7 +137,7 @@ const subscriptionValidation = (config: SubscriptionValidationConfig = {}) => {
     if (!allowDuplicates && email) {
       try {
         const existingSubscription = await strapi.entityService.findMany(
-          'api::newsletter-subscription.newsletter-subscription',
+          'api::subscriber.subscriber',
           {
             filters: {
               email: email.toLowerCase().trim()
@@ -139,7 +147,7 @@ const subscriptionValidation = (config: SubscriptionValidationConfig = {}) => {
         );
 
         if (existingSubscription && existingSubscription.length > 0) {
-          const subscription = existingSubscription[0];
+          const subscription = existingSubscription[0] as Subscriber;
           
           // If subscription exists and is active
           if (subscription.isActive) {
@@ -163,7 +171,7 @@ const subscriptionValidation = (config: SubscriptionValidationConfig = {}) => {
           if (!subscription.isActive) {
             try {
               const updatedSubscription = await strapi.entityService.update(
-                'api::newsletter-subscription.newsletter-subscription',
+                'api::subscriber.subscriber',
                 subscription.id,
                 {
                   data: {

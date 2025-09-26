@@ -1,76 +1,11 @@
-import { env } from "process";
-
+// config/plugins.ts
 export default ({ env }) => ({
-  email: {
-    config: {
-      provider: 'strapi-provider-email-brevo',
-      providerOptions: {
-        apiKey: env('BREVO_API_KEY'),
-      },
-      settings: {
-        defaultSenderEmail: env('BREVO_SENDER_EMAIL'),
-        defaultSenderName: env('BREVO_SENDER_NAME'),
-        defaultReplyTo: env('BREVO_SENDER_EMAIL'),
-        testAddress: env('BREVO_SENDER_EMAIL'),
-      },
-    },
-  },
-  // 'email-designer-5': {
-  //   enabled: true,
-  // },
-  'populate-deep': {
-    config: {
-      defaultDepth: 5, // Default is 5
-    }
-  },
-  seo: {
-    enabled: true,
-  },
-  slugify: {
+  'ai-text-generation': {
     enabled: true,
     config: {
-      contentTypes: {
-        article: {
-          field: 'slug',
-          references: 'title',
-        },
-        category: {
-          field: 'slug',
-          references: 'name',
-        },
-        author: {
-          field: 'slug',
-          references: 'name',
-        },
-        tag: {
-          field: 'slug',
-          references: 'name',
-        },
-      },
+      openaiApiKey: env("OPEN_AI_API_TOKEN"),
     },
-  },
-  graphql: {
-    enabled: true,
-    config: {
-      endpoint: '/graphql',
-      shadowCRUD: true,
-      playgroundAlways: false,
-      depthLimit: 7,
-      amountLimit: 100,
-      apolloServer: {
-        tracing: false,
-      },
-    }
-  },
-  upload: {
-    config: {
-      provider: 'cloudinary',
-      providerOptions: {
-        cloud_name: env('CLOUDINARY_NAME'),
-        api_key: env('CLOUDINARY_KEY'),
-        api_secret: env('CLOUDINARY_SECRET'),
-      },
-    },
+    resolve: "./src/plugins/ai-text-generation",
   },
   documentation: {
     enabled: true,
@@ -78,26 +13,45 @@ export default ({ env }) => ({
       openapi: '3.0.0',
       info: {
         version: '1.0.0',
-        title: 'News CMS API',
-        description: 'API documentation for News CMS',
+        title: 'Strapi API Documentation',
+        description: 'Documentation for Strapi API',
+        termsOfService: 'https://example.com/terms',
         contact: {
           name: 'API Support',
-          email: 'support@newscms.com',
+          email: 'support@example.com',
+          url: 'https://example.com/contact'
         },
         license: {
-          name: 'MIT',
-          url: 'https://opensource.org/licenses/MIT',
+          name: 'Apache 2.0',
+          url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
         },
       },
       'x-strapi-config': {
-        mutateDocumentation: (generatedDocumentationDraft: any) => {
-          // Customize documentation here if needed
-          return generatedDocumentationDraft;
+        plugins: ['upload', 'users-permissions'],
+        path: '/documentation',
+      },
+      servers: [
+        {
+          url: env('API_URL', 'http://localhost:1337'),
+          description: 'Development server',
         },
+      ],
+      externalDocs: {
+        description: 'Find out more',
+        url: 'https://docs.strapi.io/developer-docs/latest/getting-started/introduction.html',
+      },
+      security: [{
+        bearerAuth: []
+      }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          }
+        }
       },
     },
-  },
-  'strapi-google-analytics-dashboard': {
-    enabled: false,
   },
 });

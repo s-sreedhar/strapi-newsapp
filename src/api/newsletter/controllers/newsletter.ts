@@ -3,132 +3,128 @@
  */
 
 import { factories } from '@strapi/strapi';
-import brevoEmailService from '../../../services/brevo-email';
+
+interface Subscriber {
+  id: number;
+  email: string;
+  fullname?: string;
+  isActive: boolean;
+}
 
 export default factories.createCoreController('api::newsletter.newsletter', ({ strapi }) => ({
-  // Send newsletter to all active subscribers
-  async sendNewsletter(ctx) {
+  // Custom subscribe method
+  async subscribe(ctx) {
     try {
-      const { id } = ctx.params;
-      
-      // Get the newsletter
-      const newsletter = await strapi.entityService.findOne('api::newsletter.newsletter', id);
-      
-      if (!newsletter) {
-        return ctx.notFound('Newsletter not found');
+      const { email, fullname } = ctx.request.body;
+
+      // Validate required fields
+      if (!email) {
+        return ctx.badRequest('Email is required');
       }
-      
-      if (newsletter.docstatus === 'sent') {
-        return ctx.badRequest('Newsletter has already been sent');
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return ctx.badRequest('Invalid email format');
       }
-      
-      // Get all active subscribers
-      const subscribers = await strapi.entityService.findMany('api::newsletter-subscription.newsletter-subscription', {
-        filters: {
-          isActive: true
+
+      // Check if subscriber already exists
+      const existingSubscriber = await strapi.entityService.findMany('api::subscriber.subscriber', {
+        filters: { email },
+        limit: 1,
+      }) as any[];
+
+      if (existingSubscriber.length > 0) {
+        // If subscriber exists but is inactive, reactivate them
+        if (!existingSubscriber[0].isActive) {
+          const updatedSubscriber = await strapi.entityService.update('api::subscriber.subscriber', existingSubscriber[0].id, {
+            data: {
+              isActive: true,
+              fullname: fullname || existingSubscriber[0].fullname,
+              subscribedAt: new Date(),
+            },
+          });
+          
+          return ctx.send({
+            message: 'Successfully reactivated your subscription!',
+            data: {
+              email: updatedSubscriber.email,
+              isActive: updatedSubscriber.isActive,
+            },
+          });
+        } else {
+          return ctx.send({
+            message: 'You are already subscribed to our newsletter!',
+            data: {
+              email: existingSubscriber[0].email,
+              isActive: existingSubscriber[0].isActive,
+            },
+          });
         }
-      });
-      
-      if (subscribers.length === 0) {
-        return ctx.badRequest('No active subscribers found');
       }
-      
-      // Send newsletter via Brevo
-      const results = await brevoEmailService.sendNewsletterToSubscribers(newsletter, subscribers);
-      
-      // Update newsletter status
-      await strapi.entityService.update('api::newsletter.newsletter', id, {
+
+      // Create new subscriber
+      const newSubscriber = await strapi.entityService.create('api::subscriber.subscriber', {
         data: {
-          docstatus: 'sent',
-          sentAt: new Date()
-        }
+          email,
+          fullname: fullname || 'Anonymous',
+          isActive: true,
+          subscribedAt: new Date(),
+        },
       });
-      
-      // Count successful and failed sends
-      const successfulSends = results.filter(r => r.success).length;
-      const failedSends = results.filter(r => !r.success).length;
-      
-      return {
-        message: 'Newsletter sent successfully',
-        totalSubscribers: subscribers.length,
-        successfulSends,
-        failedSends,
-        results
-      };
-      
+
+      return ctx.send({
+        message: 'Successfully subscribed to newsletter!',
+        data: {
+          email: newSubscriber.email,
+          isActive: newSubscriber.isActive,
+        },
+      });
     } catch (error) {
-      console.error('Error sending newsletter:', error);
-      return ctx.internalServerError('Failed to send newsletter');
+      console.error('Newsletter subscription error:', error);
+      return ctx.internalServerError('Failed to process subscription. Please try again later.');
     }
   },
   
-  // Send test newsletter to specific email
-  async sendTestNewsletter(ctx) {
+  // Update newsletter status and sentAt safely via entityService
+  async updateStatus(ctx) {
     try {
-      const { id } = ctx.params;
-      const { testEmail } = ctx.request.body;
-      
-      if (!testEmail) {
-        return ctx.badRequest('Test email is required');
+      const { id } = ctx.params as { id: string };
+      const { status } = ctx.request.body as { status: 'draft' | 'sent' };
+
+      if (!id) {
+        return ctx.badRequest('Missing newsletter id');
       }
-      
-      // Get the newsletter
-      const newsletter = await strapi.entityService.findOne('api::newsletter.newsletter', id);
-      
-      if (!newsletter) {
+      if (!status || (status !== 'draft' && status !== 'sent')) {
+        return ctx.badRequest('Invalid status');
+      }
+
+      // Ensure entity exists
+      const existing = await strapi.entityService.findOne('api::newsletter.newsletter', Number(id), {
+        fields: ['id', 'docStatus', 'sentAt']
+      });
+      if (!existing) {
         return ctx.notFound('Newsletter not found');
       }
-      
-      // Create a mock subscriber for testing
-      const testSubscriber = {
-        email: testEmail,
-        fullname: 'Test User',
-        isActive: true
-      };
-      
-      // Send test email
-      const result = await brevoEmailService.sendNewsletterToSubscribers(newsletter, [testSubscriber]);
-      
-      return {
-        message: 'Test newsletter sent successfully',
-        result: result[0]
-      };
-      
-    } catch (error) {
-      console.error('Error sending test newsletter:', error);
-      return ctx.internalServerError('Failed to send test newsletter');
-    }
-  },
-  
-  // Get newsletter statistics
-  async getNewsletterStats(ctx) {
-    try {
-      const { id } = ctx.params;
-      
-      // Get the newsletter
-      const newsletter = await strapi.entityService.findOne('api::newsletter.newsletter', id);
-      
-      if (!newsletter) {
-        return ctx.notFound('Newsletter not found');
-      }
-      
-      // Get total subscribers count
-      const totalSubscribers = await strapi.entityService.count('api::newsletter-subscription.newsletter-subscription', {
-        filters: {
-          isActive: true
+
+      const updated = await strapi.entityService.update('api::newsletter.newsletter', Number(id), {
+        data: {
+          docStatus: status,
+          sentAt: status === 'sent' ? new Date() : null,
         }
       });
-      
-      return {
-        newsletter,
-        totalSubscribers,
-        isSent: newsletter.docstatus === 'sent',
-        sentAt: newsletter.sentAt
-      };
-      
+
+      return ctx.send({
+        message: 'Status updated',
+        data: {
+          id: updated.id,
+          docStatus: updated.docStatus,
+          sentAt: updated.sentAt,
+        }
+      });
     } catch (error) {
-      console.error('Error getting newsletter stats:', error);
-      return ctx.internalServerError('Failed to get newsletter statistics');
+      console.error('Update newsletter status error:', error);
+      return ctx.internalServerError('Failed to update status');
     }
-  }
+  },
 }));

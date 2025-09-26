@@ -9,35 +9,37 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": true
+    }
+  },
   "attributes": {
     "title": {
       "type": "string",
       "required": true
     },
     "subject": {
-      "type": "text",
+      "type": "string",
       "required": true
+    },
+    "docStatus": {
+      "type": "enumeration",
+      "default": "draft",
+      "enum": [
+        "draft",
+        "sent"
+      ]
+    },
+    "sentAt": {
+      "type": "datetime"
     },
     "content": {
       "type": "richtext",
       "required": true
-    },
-    "docstatus": {
-      "type": "enumeration",
-      "required": false,
-      "default": "draft",
-      "enum": [
-        "draft",
-        "scheduled",
-        "sent"
-      ]
-    },
-    "scheduledAt": {
-      "type": "datetime"
-    },
-    "sentAt": {
-      "type": "datetime"
     }
   }
 }

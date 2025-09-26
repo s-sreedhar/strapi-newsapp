@@ -26,26 +26,54 @@
       "maxLength": 300,
       "required": true
     },
-    "content": {
-      "type": "richtext",
-      "required": true
-    },
     "featuredImage": {
       "type": "media",
       "multiple": false,
       "required": true,
       "allowedTypes": [
+        "images",
         "files",
-        "images"
+        "videos",
+        "audios"
       ]
     },
-    "gallery": {
-      "type": "media",
-      "multiple": true,
-      "allowedTypes": [
-        "images",
-        "files"
-      ]
+    "imageAlt": {
+      "type": "string",
+      "required": true
+    },
+    "isBreaking": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "readTime": {
+      "type": "integer",
+      "required": true,
+      "default": 0,
+      "min": 1,
+      "max": 60
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 100,
+      "required": true
+    },
+    "seoTitle": {
+      "type": "string",
+      "maxLength": 60,
+      "required": true
+    },
+    "seoDescription": {
+      "type": "string",
+      "maxLength": 160,
+      "required": true
+    },
+    "publishedDate": {
+      "type": "datetime"
     },
     "author": {
       "type": "relation",
@@ -64,59 +92,6 @@
       "relation": "manyToMany",
       "target": "api::tag.tag",
       "inversedBy": "articles"
-    },
-    "isBreaking": {
-      "type": "boolean",
-      "default": false
-    },
-    "isFeatured": {
-      "type": "boolean",
-      "default": false
-    },
-    "readTime": {
-      "type": "integer",
-      "min": 1,
-      "max": 60
-    },
-    "views": {
-      "type": "integer",
-      "default": 0
-    },
-    "location": {
-      "type": "string",
-      "maxLength": 100
-    },
-    "seoTitle": {
-      "type": "string",
-      "maxLength": 60
-    },
-    "seoDescription": {
-      "type": "text",
-      "maxLength": 160
-    },
-    "socialImage": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "publishedDate": {
-      "type": "datetime",
-      "required": true
-    },
-    "priority": {
-      "type": "enumeration",
-      "default": "low",
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "urgent"
-      ]
     }
   }
 }

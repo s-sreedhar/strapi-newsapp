@@ -1,5 +1,13 @@
 import * as SibApiV3Sdk from "@getbrevo/brevo";
 
+interface Subscriber {
+  id: number;
+  email: string;
+  fullname: string;
+  isActive: boolean;
+  subscribedAt: string;
+}
+
 export default {
   async sendEmail({ to, subject, htmlContent }) {
     try {
@@ -29,7 +37,7 @@ export default {
   async sendNewsletterToSubscribers({ subject, htmlContent }) {
     try {
       // Get all active newsletter subscriptions
-      const subscriptions = await strapi.entityService.findMany('api::newsletter-subscription.newsletter-subscription', {
+      const subscriptions = await strapi.entityService.findMany('api::subscriber.subscriber', {
         filters: {
           isActive: {
             $eq: true
@@ -50,7 +58,7 @@ export default {
        const results = [];
        
        // Send email to each subscriber
-       for (const subscription of subscriptions) {
+       for (const subscription of subscriptions as Subscriber[]) {
          let sendSmtpEmail = new brevo.SendSmtpEmail();
         
         sendSmtpEmail.subject = subject;

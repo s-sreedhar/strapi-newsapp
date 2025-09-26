@@ -1,45 +1,52 @@
+// config/middlewares.ts
 export default [
-  'strapi::logger',
   'strapi::errors',
   {
-    name: "strapi::security",
+    name: 'strapi::security',
     config: {
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          "script-src": ["'self'", "'unsafe-inline'", "editor.unlayer.com"],
-          "frame-src": ["'self'", "editor.unlayer.com"],
+          'connect-src': ["'self'", 'https:', 'http:'],
+          'img-src': ["'self'", 'data:', 'blob:', 'cdn.jsdelivr.net', 'strapi.io', 'res.cloudinary.com'],
+          'media-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com'],
+          'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          'style-src': ["'self'", "'unsafe-inline'"],
+          'font-src': ["'self'", 'data:', 'blob:'],
           upgradeInsecureRequests: null,
         },
       },
-      // Enhanced security headers
-      hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
-      },
-      frameguard: {
-        action: 'deny'
-      },
-      xssFilter: true,
-      noSniff: true,
-      referrerPolicy: 'same-origin'
     },
   },
   {
     name: 'strapi::cors',
     config: {
       enabled: true,
-      headers: '*',
-      origin: ['http://localhost:1337', 'http://localhost:3000', 'https://yourdomain.com'],
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS'],
-      credentials: true,
-    },
+      headers: ['*'],
+      origin: ['http://localhost:1337', 'http://localhost:3000', 'http://localhost:8000', 'https://migrant-beige.vercel.app'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+      credentials: true
+    }
   },
-  'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
   'strapi::session',
   'strapi::favicon',
-  'strapi::public',
+  {
+    name: 'strapi::public',
+    config: {
+      defaultIndex: false,
+      maxAge: 31536000,
+      path: './public',
+      prefix: '/public',
+      static: {
+        etag: true,
+        maxAge: 31536000,
+        immutable: true,
+      },
+    },
+  },
+  'strapi::errors',
+  'strapi::poweredBy',
+  'strapi::logger',
 ];

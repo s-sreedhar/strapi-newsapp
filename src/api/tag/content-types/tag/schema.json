@@ -21,10 +21,9 @@
       "targetField": "name",
       "required": true
     },
-    "color": {
+    "description": {
       "type": "string",
-      "default": "#6B7280",
-      "maxLength": 7
+      "maxLength": 50
     },
     "articles": {
       "type": "relation",

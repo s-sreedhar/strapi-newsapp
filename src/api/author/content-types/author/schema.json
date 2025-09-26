@@ -26,22 +26,9 @@
       "required": true,
       "unique": true
     },
-    "bio": {
-      "type": "richtext",
-      "maxLength": 500
-    },
-    "avatar": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "socialMedia": {
-      "type": "json"
-    },
     "isActive": {
       "type": "boolean",
+      "required": false,
       "default": true
     },
     "articles": {

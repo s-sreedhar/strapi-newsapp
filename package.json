@@ -1,5 +1,5 @@
 {
-  "name": "news-cms",
+  "name": "cms",
   "version": "0.1.0",
   "private": true,
   "description": "A Strapi application",
@@ -16,22 +16,17 @@
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
-    "@strapi/plugin-cloud": "5.19.0",
-    "@strapi/plugin-documentation": "^5.19.0",
-    "@strapi/plugin-graphql": "^5.19.0",
-    "@strapi/plugin-seo": "^2.0.8",
-    "@strapi/plugin-users-permissions": "5.19.0",
-    "@strapi/provider-upload-cloudinary": "^5.20.0",
-    "@strapi/strapi": "5.19.0",
+    "@google/generative-ai": "^0.24.1",
+    "@strapi/plugin-cloud": "5.23.0",
+    "@strapi/plugin-documentation": "^5.23.2",
+    "@strapi/plugin-users-permissions": "5.23.0",
+    "@strapi/strapi": "5.23.0",
     "better-sqlite3": "11.3.0",
     "pg": "^8.16.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0",
-    "sib-api-v3-sdk": "^8.5.0",
     "strapi-google-analytics-dashboard": "^0.0.2",
-    "strapi-plugin-email-designer-5": "^0.0.7",
-    "strapi-plugin-slugify": "^2.3.8",
     "strapi-provider-email-brevo": "^1.0.4",
     "styled-components": "^6.0.0"
   },
@@ -42,11 +37,11 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": "20.x",
-    "npm": ">=9.0.0"
+    "node": ">=18.0.0 <=22.x.x",
+    "npm": ">=6.0.0"
   },
   "strapi": {
-    "uuid": "dff3ceaf-2dac-4ddf-83d8-cacd99c0551e",
-    "installId": "aad6029358ac2c154224b339a941257d6647c625ddca4401b58f483d138a6c7b"
+    "uuid": "da8e0ca1-6914-4d3c-8228-3ab38530559d",
+    "installId": "fcb3ad7e92fef5d1cf67ec30e721b2d72a492405e6de0a3875ecf8c768f1f33e"
   }
 }
